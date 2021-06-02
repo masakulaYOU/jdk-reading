@@ -1052,10 +1052,24 @@ public final class String
     }
 
     /**
+     * String的equals方法、contentEquals方法
+     * equals方法是和一个字符串对象比较，即String类型
+     * contentEquals方法不检查类型，其传入的类型是实现了CharSequence接口的对象
+     * 包括String，StringBuffer和StringBuilder
+     *
+     * TODO: 现在有点不太懂，为什么专门写一个contentEquals(StringBuffer sb)的方法
+     * TODO: contentEquals(CharSequence cs)方法也可以接收StringBuffer类型，不需要再专门写一个了啊
+     * */
+
+    /**
      * Compares this string to the specified object.  The result is {@code
      * true} if and only if the argument is not {@code null} and is a {@code
      * String} object that represents the same sequence of characters as this
      * object.
+     * <p>
+     *     判断指定对象于该对象是否代表同一个字符串序列
+     *     如果比较对象非null而且是个与该对象具有相同的字符串序列的String对象，则返回true
+     * </p>
      *
      * @param  anObject
      *         The object to compare this {@code String} against
@@ -1067,18 +1081,20 @@ public final class String
      * @see  #equalsIgnoreCase(String)
      */
     public boolean equals(Object anObject) {
+        /* 先比较引用，如果是 同一个引用，则返回true */
         if (this == anObject) {
             return true;
         }
+        /* 判断是否是一个String对象，如果不是String对象，则无法比较，直接返回false */
         if (anObject instanceof String) {
-            String anotherString = (String)anObject;
-            int n = value.length;
-            if (n == anotherString.value.length) {
-                char v1[] = value;
+            String anotherString = (String)anObject;        // 将比较对象强转为String类型
+            int n = value.length;                           // 该对象的长度
+            if (n == anotherString.value.length) {          // 判断比较对象和该对象的长度是否相等，不相等肯定不是同一个字符序列
+                char v1[] = value;                          // 获取该对象和比较对象的字符数组，然后一个字符一个字符地比较
                 char v2[] = anotherString.value;
                 int i = 0;
                 while (n-- != 0) {
-                    if (v1[i] != v2[i])
+                    if (v1[i] != v2[i])                     // 这里其实可以直接用n的，但是为什么不用呢
                         return false;
                     i++;
                 }
@@ -1094,6 +1110,11 @@ public final class String
      * sequence of characters as the specified {@code StringBuffer}. This method
      * synchronizes on the {@code StringBuffer}.
      *
+     * <p>
+     *     将该对象与指定的StringBuffer对象进行比较
+     *     这是个同步方法
+     * </p>
+     *
      * @param  sb
      *         The {@code StringBuffer} to compare this {@code String} against
      *
@@ -1107,14 +1128,20 @@ public final class String
         return contentEquals((CharSequence)sb);
     }
 
+    /**
+     * 判断内容相同的非同步方法
+     *
+     * @param sb
+     * @return
+     */
     private boolean nonSyncContentEquals(AbstractStringBuilder sb) {
-        char v1[] = value;
-        char v2[] = sb.getValue();
-        int n = v1.length;
-        if (n != sb.length()) {
+        char v1[] = value;                  // 本对象的字符
+        char v2[] = sb.getValue();          // 比较对象的字符
+        int n = v1.length;                  // 本对象的长度
+        if (n != sb.length()) {             // 比较长度，如果长度不等，内容一定不同
             return false;
         }
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++) {       // 一个字符一个字符的比较
             if (v1[i] != v2[i]) {
                 return false;
             }
@@ -1128,6 +1155,11 @@ public final class String
      * same sequence of char values as the specified sequence. Note that if the
      * {@code CharSequence} is a {@code StringBuffer} then the method
      * synchronizes on it.
+     *
+     * <p>
+     *     与指定的CharSequence对象进行比较
+     *     如果这个CharSequence是从StringBuffer转过来的，那么就是个同步方法
+     * </p>
      *
      * @param  cs
      *         The sequence to compare this {@code String} against
@@ -1186,6 +1218,8 @@ public final class String
      *        produces the same result
      * </ul>
      *
+     * 不考虑大小写，与另一个String对象进行对比
+     *
      * @param  anotherString
      *         The {@code String} to compare this {@code String} against
      *
@@ -1196,10 +1230,10 @@ public final class String
      * @see  #equals(Object)
      */
     public boolean equalsIgnoreCase(String anotherString) {
-        return (this == anotherString) ? true
-                : (anotherString != null)
-                && (anotherString.value.length == value.length)
-                && regionMatches(true, 0, anotherString, 0, value.length);
+        return (this == anotherString) ? true                                                           // 比较引用
+                : (anotherString != null)                                                               // 是否非空
+                && (anotherString.value.length == value.length)                                         // 比较长度
+                && regionMatches(true, 0, anotherString, 0, value.length);    // 逐个比较
     }
 
     /**
@@ -1242,16 +1276,20 @@ public final class String
      *          is lexicographically less than the string argument; and a
      *          value greater than {@code 0} if this string is
      *          lexicographically greater than the string argument.
+     *
+     * 比较大小
+     * 比较的规则取决于每个字符的Unicode编码
+     * 如果比比比较对象小，返回负值，如果比比较对象搭，返回正值，否则返回0
      */
     public int compareTo(String anotherString) {
         int len1 = value.length;
         int len2 = anotherString.value.length;
-        int lim = Math.min(len1, len2);
+        int lim = Math.min(len1, len2);                 // 比较的范围只能是两者中最短的长度
         char v1[] = value;
         char v2[] = anotherString.value;
 
         int k = 0;
-        while (k < lim) {
+        while (k < lim) {                               // 先比较字符
             char c1 = v1[k];
             char c2 = v2[k];
             if (c1 != c2) {
@@ -1259,7 +1297,7 @@ public final class String
             }
             k++;
         }
-        return len1 - len2;
+        return len1 - len2;                             // 所有字符都比较完了，返回长度差，如果本字符串短，就是负，如果本字符串长，就是正，一样长，就是0
     }
 
     /**
@@ -1273,6 +1311,8 @@ public final class String
      *
      * @see     java.text.Collator#compare(String, String)
      * @since   1.2
+     *
+     * 静态内部类，一个大小写不敏感的字符串比较器
      */
     public static final Comparator<String> CASE_INSENSITIVE_ORDER
                                          = new CaseInsensitiveComparator();
@@ -1281,6 +1321,11 @@ public final class String
         // use serialVersionUID from JDK 1.2.2 for interoperability
         private static final long serialVersionUID = 8575799808933029326L;
 
+        /**
+         * 比较两个字符串
+         * 和comparaTo一样，只是大小写都要比较
+         * String.CASE_INSENSITIVE_ORDER.compare(s1, s2);
+         */
         public int compare(String s1, String s2) {
             int n1 = s1.length();
             int n2 = s2.length();
@@ -1305,8 +1350,10 @@ public final class String
         }
 
         /** Replaces the de-serialized object. */
+        /** 用于替代反序列化后的对象 **/
         private Object readResolve() { return CASE_INSENSITIVE_ORDER; }
     }
+
 
     /**
      * Compares two strings lexicographically, ignoring case
@@ -1327,6 +1374,8 @@ public final class String
      *          than this String, ignoring case considerations.
      * @see     java.text.Collator#compare(String, String)
      * @since   1.2
+     *
+     * 不考虑大小写的比较
      */
     public int compareToIgnoreCase(String str) {
         return CASE_INSENSITIVE_ORDER.compare(this, str);
@@ -1363,6 +1412,15 @@ public final class String
      * @return  {@code true} if the specified subregion of this string
      *          exactly matches the specified subregion of the string argument;
      *          {@code false} otherwise.
+     *
+     *  比较某一个区域内两个字符串是否相等
+     *  参数：
+     *      toffset： 此字符串子序列的起始偏移量
+     *      other：要比较的字符串
+     *      ooffset: 要比较的字符串的子序列的偏移量
+     *      len: 要比较的长度
+     *
+     *  这个和下面的那个区别就是是否考虑大小写
      */
     public boolean regionMatches(int toffset, String other, int ooffset,
             int len) {
@@ -1433,6 +1491,17 @@ public final class String
      *          {@code false} otherwise. Whether the matching is exact
      *          or case insensitive depends on the {@code ignoreCase}
      *          argument.
+     *
+     * 将测两个字符串在某一个区域是否相等
+     * 参数：
+     *      ignoreCase  是否不区分大小写
+     *      toffset     此字符串的子区域的起始偏移量
+     *      other       要比较的字符串
+     *      ooffset     要比较的字符串的子区域的起始偏移量
+     *      len         要比较的字符的数量
+     *
+     * 奇怪的写法，为什么不ignoreCase == false的时候
+     * 直接调用regionMatches(toffset, other, ooffset, len)呢
      */
     public boolean regionMatches(boolean ignoreCase, int toffset,
             String other, int ooffset, int len) {
@@ -1441,15 +1510,15 @@ public final class String
         char pa[] = other.value;
         int po = ooffset;
         // Note: toffset, ooffset, or len might be near -1>>>1.
-        if ((ooffset < 0) || (toffset < 0)
-                || (toffset > (long)value.length - len)
-                || (ooffset > (long)other.value.length - len)) {
+        if ((ooffset < 0) || (toffset < 0)                                  // 这里考虑了给定了toffset/ooffset/len很大的情况下
+                || (toffset > (long)value.length - len)                     // 如果给定的范围(起始点+长度)超过了本字符串的长度，或者起始点位置小于0
+                || (ooffset > (long)other.value.length - len)) {            // 返回false
             return false;
         }
-        while (len-- > 0) {
-            char c1 = ta[to++];
-            char c2 = pa[po++];
-            if (c1 == c2) {
+        while (len-- > 0) {                                                 // 逐个比较
+            char c1 = ta[to++];                                             // 先判断对应的字符是否相同
+            char c2 = pa[po++];                                             // 如果不相同且指定了ignoreCase，分比较其大小写是否相等
+            if (c1 == c2) {                                                 // 大小写都要比较，由于在Georian alphabet语言中大小写转换规则很诡异，只比较大写是不够的
                 continue;
             }
             if (ignoreCase) {
@@ -1491,6 +1560,7 @@ public final class String
      *          <pre>
      *          this.substring(toffset).startsWith(prefix)
      *          </pre>
+     * 某一个字串是否的开头是否与指定的内容相同
      */
     public boolean startsWith(String prefix, int toffset) {
         char ta[] = value;
@@ -1522,6 +1592,8 @@ public final class String
      *          {@code String} object as determined by the
      *          {@link #equals(Object)} method.
      * @since   1. 0
+     *
+     * 整个字符串以XXX开头
      */
     public boolean startsWith(String prefix) {
         return startsWith(prefix, 0);
@@ -1537,6 +1609,8 @@ public final class String
      *          result will be {@code true} if the argument is the
      *          empty string or is equal to this {@code String} object
      *          as determined by the {@link #equals(Object)} method.
+     *
+     * 整个字符串以XXX结尾
      */
     public boolean endsWith(String suffix) {
         return startsWith(suffix, value.length - suffix.value.length);
@@ -1554,6 +1628,11 @@ public final class String
      * (The hash value of the empty string is zero.)
      *
      * @return  a hash code value for this object.
+     *
+     * 字符串的哈希码
+     * 哈希的计算：
+     *  s[0] * 31^(n-1) + s[1] * 31^(n-2) + ... + s[n-1]
+     *
      */
     public int hashCode() {
         int h = hash;
@@ -1591,6 +1670,8 @@ public final class String
      * @return  the index of the first occurrence of the character in the
      *          character sequence represented by this object, or
      *          {@code -1} if the character does not occur.
+     *
+     * 返回指定字符在字符串中第一次出现的下标
      */
     public int indexOf(int ch) {
         return indexOf(ch, 0);
@@ -1634,12 +1715,14 @@ public final class String
      *          character sequence represented by this object that is greater
      *          than or equal to {@code fromIndex}, or {@code -1}
      *          if the character does not occur.
+     *
+     *  返回指定字符从字符串的指定位置开始计算第一次出现的下标
      */
     public int indexOf(int ch, int fromIndex) {
         final int max = value.length;
-        if (fromIndex < 0) {
+        if (fromIndex < 0) {                                // 开始计算的位置如果小于0，就视为0
             fromIndex = 0;
-        } else if (fromIndex >= max) {
+        } else if (fromIndex >= max) {                      // 如果大于字符串长度，就返回-1，没找到的意思
             // Note: fromIndex might be near -1>>>1.
             return -1;
         }
