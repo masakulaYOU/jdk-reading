@@ -861,6 +861,8 @@ public final class String
     /**
      * Copy characters from this string into dst starting at dstBegin.
      * This method doesn't perform any range checking.
+     *
+     * 将自己添加到目标数组的指定位置
      */
     void getChars(char dst[], int dstBegin) {
         System.arraycopy(value, 0, dst, dstBegin, value.length);
@@ -2097,6 +2099,9 @@ public final class String
      * @exception  IndexOutOfBoundsException  if
      *             {@code beginIndex} is negative or larger than the
      *             length of this {@code String} object.
+     *
+     * 从给定的位置开始，获得字符串的字串
+     *
      */
     public String substring(int beginIndex) {
         if (beginIndex < 0) {
@@ -2106,7 +2111,7 @@ public final class String
         if (subLen < 0) {
             throw new StringIndexOutOfBoundsException(subLen);
         }
-        return (beginIndex == 0) ? this : new String(value, beginIndex, subLen);
+        return (beginIndex == 0) ? this : new String(value, beginIndex, subLen);        // 指定位置是不是开头，如果是从0开始，则直接返回自身，否则新建一个字符串
     }
 
     /**
@@ -2130,6 +2135,8 @@ public final class String
      *             this {@code String} object, or
      *             {@code beginIndex} is larger than
      *             {@code endIndex}.
+     *
+     *  指定起始位置的字串
      */
     public String substring(int beginIndex, int endIndex) {
         if (beginIndex < 0) {
@@ -2142,7 +2149,7 @@ public final class String
         if (subLen < 0) {
             throw new StringIndexOutOfBoundsException(subLen);
         }
-        return ((beginIndex == 0) && (endIndex == value.length)) ? this
+        return ((beginIndex == 0) && (endIndex == value.length)) ? this                 // 起始和上面没啥区别，只是吧长度改了
                 : new String(value, beginIndex, subLen);
     }
 
@@ -2174,6 +2181,8 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 返回CharSequence的子序列，就是把subString的结果转为CharSequence了
      */
     public CharSequence subSequence(int beginIndex, int endIndex) {
         return this.substring(beginIndex, endIndex);
@@ -2198,16 +2207,18 @@ public final class String
      *                of this {@code String}.
      * @return  a string that represents the concatenation of this object's
      *          characters followed by the string argument's characters.
+     *
+     * 与另一个字符串连接起来
      */
     public String concat(String str) {
-        int otherLen = str.length();
+        int otherLen = str.length();                    // 如果连接的字符串是个空串，直接返回本身
         if (otherLen == 0) {
             return this;
         }
         int len = value.length;
-        char buf[] = Arrays.copyOf(value, len + otherLen);
-        str.getChars(buf, len);
-        return new String(buf, true);
+        char buf[] = Arrays.copyOf(value, len + otherLen); // 构建一个长度为len + otherLen的字符数组，其值是本字符串
+        str.getChars(buf, len);                                       // 将str添加到序列种
+        return new String(buf, true);                           // 返回新字符串
     }
 
     /**
@@ -2238,29 +2249,31 @@ public final class String
      * @param   newChar   the new character.
      * @return  a string derived from this string by replacing every
      *          occurrence of {@code oldChar} with {@code newChar}.
+     *
+     * 将指定字符替换成新字符
      */
     public String replace(char oldChar, char newChar) {
-        if (oldChar != newChar) {
+        if (oldChar != newChar) {                                           // 新字符与指定字符一样，不变，返回自身即可
             int len = value.length;
             int i = -1;
             char[] val = value; /* avoid getfield opcode */
 
             while (++i < len) {
-                if (val[i] == oldChar) {
+                if (val[i] == oldChar) {                                    // 找到第一个指定字符的位置
                     break;
                 }
             }
             if (i < len) {
-                char buf[] = new char[len];
-                for (int j = 0; j < i; j++) {
+                char buf[] = new char[len];         // 创建新的字符数组
+                for (int j = 0; j < i; j++) {       // 将i位置之前的全部拷贝过来
                     buf[j] = val[j];
                 }
                 while (i < len) {
                     char c = val[i];
-                    buf[i] = (c == oldChar) ? newChar : c;
+                    buf[i] = (c == oldChar) ? newChar : c; // 从第i个开始，如果字符等于指定字符，则把新字符放进去，否则把原来的拷贝进去
                     i++;
                 }
-                return new String(buf, true);
+                return new String(buf, true);       // 返回新字符串
             }
         }
         return this;
@@ -2292,6 +2305,9 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 字符串的正则表达式匹配
+     * 直接使用Pattern类的静态方法
      */
     public boolean matches(String regex) {
         return Pattern.matches(regex, this);
@@ -2304,6 +2320,8 @@ public final class String
      * @param s the sequence to search for
      * @return true if this string contains {@code s}, false otherwise
      * @since 1.5
+     *
+     * 是否包含某个字符序列s
      */
     public boolean contains(CharSequence s) {
         return indexOf(s.toString()) > -1;
@@ -2349,6 +2367,8 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 按正则表达式替换第一个匹配到的内容
      */
     public String replaceFirst(String regex, String replacement) {
         return Pattern.compile(regex).matcher(this).replaceFirst(replacement);
@@ -2394,6 +2414,8 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 按正则表达式替换所有匹配的内容
      */
     public String replaceAll(String regex, String replacement) {
         return Pattern.compile(regex).matcher(this).replaceAll(replacement);
@@ -2410,6 +2432,8 @@ public final class String
      * @param  replacement The replacement sequence of char values
      * @return  The resulting string
      * @since 1.5
+     *
+     * 将指定的字符串内容替换成新的字符串内容
      */
     public String replace(CharSequence target, CharSequence replacement) {
         return Pattern.compile(target.toString(), Pattern.LITERAL).matcher(
@@ -2501,6 +2525,10 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 分割字符串
+     * regex指定分隔符
+     * limit指定分割成的最大数量，0表示不限制数量
      */
     public String[] split(String regex, int limit) {
         /* fastpath if the regex is a
@@ -2593,6 +2621,8 @@ public final class String
      *
      * @since 1.4
      * @spec JSR-51
+     *
+     * 直接分割字符串，不指定数目
      */
     public String[] split(String regex) {
         return split(regex, 0);
@@ -2622,11 +2652,18 @@ public final class String
      *
      * @see java.util.StringJoiner
      * @since 1.8
+     *
+     * 静态方法
+     * 将多个字符串连接起来
+     * delimiter指定连接符
+     * elements数组指定连接的字符串数组
+     * String message = String.join("-", "Java", "is", "cool");
+     * -> Java-is-cool
      */
     public static String join(CharSequence delimiter, CharSequence... elements) {
         Objects.requireNonNull(delimiter);
         Objects.requireNonNull(elements);
-        // Number of elements not likely worth Arrays.stream overhead.
+        // Number of elements not likely worth Arrays.stream overhead.     添加的元素的数量不会达到值得用Arrays.stream的
         StringJoiner joiner = new StringJoiner(delimiter);
         for (CharSequence cs: elements) {
             joiner.add(cs);
@@ -2670,6 +2707,13 @@ public final class String
      * @see    #join(CharSequence,CharSequence...)
      * @see    java.util.StringJoiner
      * @since 1.8
+     *
+     * 连接多个字符串，
+     * 第二个参数是一个实现了Iterable接口的对象
+     * 如List Set
+     * 如果添加你的元素里有nill
+     * 那么就会添加一个字符串"null"
+     * 这段代码和上面那段好像没有区别
      */
     public static String join(CharSequence delimiter,
             Iterable<? extends CharSequence> elements) {
@@ -2733,6 +2777,8 @@ public final class String
      * @see     java.lang.String#toUpperCase()
      * @see     java.lang.String#toUpperCase(Locale)
      * @since   1.1
+     *
+     * 将所有字符都转为小写，locale指定哪种字符集？
      */
     public String toLowerCase(Locale locale) {
         if (locale == null) {
@@ -2893,6 +2939,8 @@ public final class String
      * @see     java.lang.String#toLowerCase()
      * @see     java.lang.String#toLowerCase(Locale)
      * @since   1.1
+     *
+     * 将所有字符转为大写
      */
     public String toUpperCase(Locale locale) {
         if (locale == null) {
@@ -3039,6 +3087,8 @@ public final class String
      * @return  A string whose value is this string, with any leading and trailing white
      *          space removed, or this string if it has no leading or
      *          trailing white space.
+     *
+     * 去除字符串两边的空格
      */
     public String trim() {
         int len = value.length;
@@ -3051,6 +3101,9 @@ public final class String
         while ((st < len) && (val[len - 1] <= ' ')) {
             len--;
         }
+
+        // 上面两个循环是计算前后第一个非空字符的下标
+        // 下面根据这两个下标构建子字符串
         return ((st > 0) || (len < value.length)) ? substring(st, len) : this;
     }
 
@@ -3069,6 +3122,7 @@ public final class String
      * @return  a newly allocated character array whose length is the length
      *          of this string and whose contents are initialized to contain
      *          the character sequence represented by this string.
+     * 将字符串转为字符数组
      */
     public char[] toCharArray() {
         // Cannot use Arrays.copyOf because of class initialization order issues
@@ -3111,6 +3165,8 @@ public final class String
      *
      * @see  java.util.Formatter
      * @since  1.5
+     *
+     * 以指定格式格式化字符串
      */
     public static String format(String format, Object... args) {
         return new Formatter().format(format, args).toString();
@@ -3165,6 +3221,8 @@ public final class String
      *          {@code "null"}; otherwise, the value of
      *          {@code obj.toString()} is returned.
      * @see     java.lang.Object#toString()
+     *
+     * 获取一个对象的字符串形式
      */
     public static String valueOf(Object obj) {
         return (obj == null) ? "null" : obj.toString();
@@ -3220,6 +3278,8 @@ public final class String
      *          negative, or {@code count} is negative, or
      *          {@code offset+count} is larger than
      *          {@code data.length}.
+     *
+     * 复制字符数组的某一部分构建新字符串
      */
     public static String copyValueOf(char data[], int offset, int count) {
         return new String(data, offset, count);
@@ -3316,6 +3376,8 @@ public final class String
     public static String valueOf(double d) {
         return Double.toString(d);
     }
+
+    // 上面是各种基本类型的字符串构建函数
 
     /**
      * Returns a canonical representation for the string object.
